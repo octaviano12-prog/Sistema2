@@ -1,0 +1,41 @@
+CREATE DATABASE IF NOT EXISTS devily
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE devily;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  phone VARCHAR(24) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('customer', 'admin', 'operator') NOT NULL DEFAULT 'customer',
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_email (email),
+  KEY idx_users_phone (phone),
+  KEY idx_users_active (active)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS user_addresses (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  label VARCHAR(50) NOT NULL DEFAULT 'Casa',
+  street VARCHAR(160) NOT NULL,
+  number VARCHAR(20) NOT NULL,
+  neighborhood VARCHAR(100) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  state CHAR(2) NOT NULL,
+  postal_code VARCHAR(12) NULL,
+  complement VARCHAR(120) NULL,
+  reference_point VARCHAR(160) NULL,
+  is_default TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_addresses_user (user_id),
+  CONSTRAINT fk_addresses_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
