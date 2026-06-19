@@ -5,6 +5,7 @@ import {
   Plus, RotateCcw, Save, Settings, ShoppingBag, Store, Tag, Trash2, X
 } from 'lucide-react';
 import { useStore } from './store';
+import BrandMark from './BrandMark';
 
 const money = value => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const statusMap = {
@@ -38,7 +39,7 @@ export default function Admin({ onExit }) {
   if (!authenticated) return <div className="admin-login">
     <button className="back-store" onClick={onExit}><ArrowLeft /> Voltar ao cardápio</button>
     <form onSubmit={login}>
-      <div className="admin-brand">D</div><span>PAINEL ADMINISTRATIVO</span><h1>{store.settings.name}</h1><p>Gerencie sua operação em um só lugar.</p>
+      <BrandMark size="large" /><span>PAINEL ADMINISTRATIVO</span><h1>{store.settings.name}</h1><p>Controle sua operação com clareza e agilidade.</p>
       <label>PIN de acesso<div><LockKeyhole /><input autoFocus value={pin} onChange={e => setPin(e.target.value)} type={showPin ? 'text' : 'password'} inputMode="numeric" placeholder="Digite o PIN" /><button type="button" onClick={() => setShowPin(!showPin)}>{showPin ? <EyeOff /> : <Eye />}</button></div></label>
       {error && <small className="login-error">{error}</small>}
       <button className="primary-button" type="submit">Entrar no painel <ChevronRight /></button>
@@ -54,7 +55,7 @@ export default function Admin({ onExit }) {
 
   return <div className="admin-shell">
     <aside className={sidebar ? 'admin-sidebar open' : 'admin-sidebar'}>
-      <div className="sidebar-brand"><div>D</div><span><strong>{store.settings.shortName}</strong><small>Administração</small></span><button onClick={() => setSidebar(false)}><X /></button></div>
+      <div className="sidebar-brand"><BrandMark size="small" light /><span><strong>{store.settings.shortName}</strong><small>Central de gestão</small></span><button onClick={() => setSidebar(false)}><X /></button></div>
       <nav>{nav.map(([id, label, Icon]) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => { setTab(id); setSidebar(false); }}><Icon /> {label}{id === 'orders' && <i>{store.orders.filter(o => !['completed', 'cancelled'].includes(o.status)).length}</i>}</button>)}</nav>
       <div className="sidebar-store"><span className={store.settings.open ? 'online' : ''}><i /> {store.settings.open ? 'Loja aberta' : 'Loja fechada'}</span><button onClick={onExit}><Store /> Ver cardápio</button><button onClick={() => { sessionStorage.removeItem('devily.admin'); setAuthenticated(false); }}><LogOut /> Sair</button></div>
     </aside>
