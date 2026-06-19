@@ -1,0 +1,12 @@
+{
+  "name": "Demonstração Devily",
+  "short_name": "Devily",
+  "description": "Cardápio digital e gestão de delivery",
+  "start_url": "/#loja",
+  "display": "standalone",
+  "background_color": "#f4f8fb",
+  "theme_color": "#1498df",
+  "icons": [
+    { "src": "/brand.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
