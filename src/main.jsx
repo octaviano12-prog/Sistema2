@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowLeft, Bike, Check, ChevronRight, Clock3, Info, LockKeyhole, MapPin,
-  Menu, Minus, PackageCheck, Plus, Search, ShoppingBag, Store, Table2, Trash2, X
+  Menu, Minus, PackageCheck, Plus, Search, ShoppingBag, Store, Table2, Trash2, UserRound, X
 } from 'lucide-react';
 import './styles.css';
 import { StoreProvider, useStore } from './store';
 import Admin from './Admin';
+import AccountModal from './AccountModal';
 
 const money = value => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const statusSteps = [
@@ -47,6 +48,7 @@ function CustomerApp({ onAdmin }) {
   const [couponCode, setCouponCode] = useState('');
   const [coupon, setCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
+  const [accountOpen, setAccountOpen] = useState(false);
 
   const filtered = useMemo(() => products.filter(product => {
     const inCategory = search || product.category === activeCategory;
@@ -84,10 +86,10 @@ function CustomerApp({ onAdmin }) {
     store.addOrder(order); setLastOrder(order); setCart([]); setCoupon(null); setCouponCode('');
   }
 
-  if (screen === 'welcome') return <Welcome settings={settings} onChoose={chooseService} onAdmin={onAdmin} onTrack={() => setTracking('lookup')} />;
+  if (screen === 'welcome') return <><Welcome settings={settings} onChoose={chooseService} onAdmin={onAdmin} onTrack={() => setTracking('lookup')} onAccount={() => setAccountOpen(true)} />{accountOpen && <AccountModal onClose={() => setAccountOpen(false)} />}{tracking && <OrderTracker initialId="" orders={store.orders} onClose={() => setTracking(null)} />}</>;
 
   return <div className="app-shell">
-    <header className="topbar"><button className="icon-button" onClick={() => setScreen('welcome')} aria-label="Voltar"><ArrowLeft /></button><div><span className="eyebrow">{settings.shortName}</span><h1>Cardápio</h1></div><button className="icon-button" onClick={onAdmin} aria-label="Abrir administração"><Menu /></button></header>
+    <header className="topbar"><button className="icon-button" onClick={() => setScreen('welcome')} aria-label="Voltar"><ArrowLeft /></button><div><span className="eyebrow">{settings.shortName}</span><h1>Cardápio</h1></div><button className="icon-button" onClick={() => setAccountOpen(true)} aria-label="Minha conta"><UserRound /></button></header>
     <main className="menu-page">
       <section className="menu-intro"><div><span className={settings.open ? 'status-dot' : 'status-dot closed'}><i /> {settings.open ? 'Aberto agora' : 'Fechado no momento'}</span><h2>O que você vai pedir hoje?</h2><p>{service === 'delivery' ? `Entrega de ${settings.deliveryTime}` : service === 'pickup' ? `Retirada de ${settings.pickupTime}` : 'Atendimento na mesa'}</p></div><div className="service-pill">{service === 'delivery' ? <Bike /> : service === 'pickup' ? <Store /> : <Table2 />}<span>{service === 'delivery' ? 'Delivery' : service === 'pickup' ? 'Retirada' : 'Mesa'}</span></div></section>
       {!settings.open && <div className="closed-notice"><Clock3 /><div><strong>Loja fechada para novos pedidos</strong><span>Você ainda pode consultar nosso cardápio.</span></div></div>}
@@ -101,11 +103,12 @@ function CustomerApp({ onAdmin }) {
     {cartOpen && <CartDrawer cart={cart} subtotal={subtotal} fee={fee} discount={discount} total={total} minimum={settings.minimumOrder} service={service} onClose={() => { setCartOpen(false); setCheckout(false); }} onChange={changeItem} checkout={checkout} setCheckout={setCheckout} onFinish={finishOrder} couponCode={couponCode} setCouponCode={setCouponCode} applyCoupon={applyCoupon} coupon={coupon} couponError={couponError} disabled={!settings.open} />}
     {lastOrder && <OrderSuccess order={lastOrder} onTrack={() => { setTracking(lastOrder.id); setLastOrder(null); }} onClose={() => { setLastOrder(null); setCartOpen(false); setCheckout(false); }} />}
     {tracking && <OrderTracker initialId={tracking === 'lookup' ? '' : tracking} orders={store.orders} onClose={() => setTracking(null)} />}
+    {accountOpen && <AccountModal onClose={() => setAccountOpen(false)} />}
   </div>;
 }
 
-function Welcome({ settings, onChoose, onAdmin, onTrack }) {
-  return <div className="welcome-page"><header className="welcome-header"><button className="icon-button" onClick={onAdmin} aria-label="Abrir administração"><Menu /></button><span>Bem-vindo!</span><button className="icon-button" onClick={onTrack} aria-label="Acompanhar pedido"><PackageCheck /></button></header><main className="welcome-content"><div className="brand-logo"><span>D</span></div><p className="brand-kicker">{settings.slogan}</p><h1>{settings.name}</h1><p className="welcome-copy">Escolha como deseja receber seu pedido</p><div className="service-grid"><button disabled={!settings.open} onClick={() => onChoose('delivery')}><span><Bike /></span><strong>Delivery</strong><small>Receba em casa</small><ChevronRight /></button><button disabled={!settings.open} onClick={() => onChoose('pickup')}><span><Store /></span><strong>Vou Buscar</strong><small>Retire no balcão</small><ChevronRight /></button><button disabled={!settings.open} onClick={() => onChoose('table')}><span><Table2 /></span><strong>Mesa</strong><small>Consuma no local</small><ChevronRight /></button></div><div className="store-status"><span className={settings.open ? '' : 'closed'}><i /> {settings.open ? 'Aberto para pedidos' : 'Fechado no momento'}</span><p><MapPin /> {settings.address}</p><div><p><Bike /> Entrega: <strong>{settings.deliveryTime}</strong></p><p><Store /> Retirada: <strong>{settings.pickupTime}</strong></p></div><button><Clock3 /> Horários de funcionamento</button></div><div className="welcome-links"><button onClick={onTrack}><PackageCheck /> Acompanhar pedido</button><button onClick={onAdmin}><LockKeyhole /> Área administrativa</button></div></main><footer>Cardápio digital • Pedido seguro</footer></div>;
+function Welcome({ settings, onChoose, onAdmin, onTrack, onAccount }) {
+  return <div className="welcome-page"><header className="welcome-header"><button className="icon-button" onClick={onAdmin} aria-label="Abrir administração"><Menu /></button><span>Bem-vindo!</span><button className="icon-button" onClick={onAccount} aria-label="Minha conta"><UserRound /></button></header><main className="welcome-content"><div className="brand-logo"><span>D</span></div><p className="brand-kicker">{settings.slogan}</p><h1>{settings.name}</h1><p className="welcome-copy">Escolha como deseja receber seu pedido</p><div className="service-grid"><button disabled={!settings.open} onClick={() => onChoose('delivery')}><span><Bike /></span><strong>Delivery</strong><small>Receba em casa</small><ChevronRight /></button><button disabled={!settings.open} onClick={() => onChoose('pickup')}><span><Store /></span><strong>Vou Buscar</strong><small>Retire no balcão</small><ChevronRight /></button><button disabled={!settings.open} onClick={() => onChoose('table')}><span><Table2 /></span><strong>Mesa</strong><small>Consuma no local</small><ChevronRight /></button></div><div className="store-status"><span className={settings.open ? '' : 'closed'}><i /> {settings.open ? 'Aberto para pedidos' : 'Fechado no momento'}</span><p><MapPin /> {settings.address}</p><div><p><Bike /> Entrega: <strong>{settings.deliveryTime}</strong></p><p><Store /> Retirada: <strong>{settings.pickupTime}</strong></p></div><button><Clock3 /> Horários de funcionamento</button></div><div className="welcome-links"><button onClick={onAccount}><UserRound /> Entrar ou cadastrar</button><button onClick={onTrack}><PackageCheck /> Acompanhar pedido</button><button onClick={onAdmin}><LockKeyhole /> Área administrativa</button></div></main><footer>Cardápio digital • Pedido seguro</footer></div>;
 }
 
 function ProductModal({ product, quantity, setQuantity, notes, setNotes, onClose, onAdd, disabled }) {
